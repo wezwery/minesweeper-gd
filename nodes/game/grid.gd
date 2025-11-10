@@ -2,6 +2,7 @@ extends TileMapLayer
 
 var _grid_set : GameGridSet = tile_set
 var _mines_coords : Array[Vector2i] = []
+var _opened_cells := 0
 var _grid_size:Vector2i
 var _is_game_over:=false
 
@@ -45,6 +46,11 @@ func open_cell(coord: Vector2i) -> void:
 		else:
 			_set_cell(coord, _grid_set.EMPTY_CELL)
 			_open_empty_cells_recursive(coord)
+		
+		_opened_cells += 1
+		
+		if _opened_cells == (_grid_size.x * _grid_size.y) - _mines_coords.size():
+			_is_game_over=true
 	pass
 
 func _open_all_mines() -> void:
@@ -100,6 +106,7 @@ func generate_grid(width:int, height:int, mines:int) -> void:
 
 	_grid_size = Vector2i(width,height)
 	_is_game_over=false
+	_opened_cells = 0
 
 	clear()
 	
