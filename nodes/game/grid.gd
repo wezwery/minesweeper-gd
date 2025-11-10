@@ -9,22 +9,16 @@ var _is_game_over:=false
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.is_pressed():
-		if event.button_index == MouseButton.MOUSE_BUTTON_LEFT:
-			var cell := _get_cell_coord()
-			
+		var cell := _get_cell_coord()
+		if _is_cell_coord_valid(cell):
+			get_viewport().set_input_as_handled()
 			if _is_game_over:
 				generate_grid(_grid_size.x, _grid_size.y, _mines_coords.size())
-			elif _is_cell_coord_valid(cell):
-				get_viewport().set_input_as_handled()
-				open_cell(cell)
-			pass
-		elif event.button_index == MouseButton.MOUSE_BUTTON_RIGHT:
-			var cell := _get_cell_coord()
-			if _is_cell_coord_valid(cell):
-				get_viewport().set_input_as_handled()
-				_switch_cell(cell)
-			pass
-		pass
+			else:
+				if event.button_index == MouseButton.MOUSE_BUTTON_LEFT:
+					open_cell(cell)
+				elif event.button_index == MouseButton.MOUSE_BUTTON_RIGHT:
+					_switch_cell(cell)
 
 func _switch_cell(coord: Vector2i)->void:
 	var id := _get_cell_id(coord)
