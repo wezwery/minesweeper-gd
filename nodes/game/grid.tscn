@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://dkmc0aa45j6cx"]
+
+[ext_resource type="TileSet" uid="uid://bcayd3dtu5q6x" path="res://assets/game_grid_set.tres" id="1_o6cr0"]
+[ext_resource type="Script" uid="uid://x6afsdyiq75r" path="res://nodes/game/grid.gd" id="2_34m43"]
+
+[node name="grid" type="TileMapLayer"]
+tile_set = ExtResource("1_o6cr0")
+script = ExtResource("2_34m43")

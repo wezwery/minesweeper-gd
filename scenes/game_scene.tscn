@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://bqfk43mf78ly4"]
+
+[ext_resource type="Script" uid="uid://csfggqouu2unq" path="res://scenes/game_scene.gd" id="1_onqr8"]
+[ext_resource type="PackedScene" uid="uid://dkmc0aa45j6cx" path="res://nodes/game/grid.tscn" id="1_w5aja"]
+
+[node name="game_scene" type="Node2D"]
+script = ExtResource("1_onqr8")
+
+[node name="grid" parent="." node_paths=PackedStringArray("camera") instance=ExtResource("1_w5aja")]
+camera = NodePath("../camera")
+
+[node name="camera" type="Camera2D" parent="."]
+zoom = Vector2(2.5, 2.5)
