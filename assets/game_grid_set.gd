@@ -17,6 +17,7 @@ var NUMBERS : Array[Vector2i] = [ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT]
 var EMPTY_CELL := Vector2i(0, 2)
 var CELL := Vector2i(1, 2)
 var FLAG_CELL := Vector2i(2, 2)
+var WRONG_FLAG_CELL := Vector2i(3, 2)
 var UNKNOWN_CELL := Vector2i(1, 3)
 var MINE_CELL := Vector2i(2, 3)
 var EXPLODE_MINE_CELL := Vector2i(3, 3)

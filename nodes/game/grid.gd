@@ -74,6 +74,12 @@ func _try_open_neighbours(coord: Vector2i) -> void:
 func _open_all_mines() -> void:
 	for x in _mines_coords:
 		_set_cell(x, _grid_set.MINE_CELL)
+	
+	for x in _grid_size.x:
+		for y in _grid_size.y:
+			var coord:=Vector2i(x,y)
+			if _get_cell_id(coord) == _grid_set.FLAG_CELL:
+				_set_cell(coord, _grid_set.WRONG_FLAG_CELL)
 
 func _open_empty_cells_recursive(coord:Vector2i) -> void:
 	for x in range(-1, 2):
