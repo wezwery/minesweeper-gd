@@ -32,7 +32,13 @@ func _switch_cell(coord: Vector2i)->void:
 		_set_cell(coord, _grid_set.CELL)
 
 func open_cell(coord: Vector2i) -> void:
-	if _get_cell_id(coord) != _grid_set.CELL:
+	var id:= _get_cell_id(coord)
+	
+	if id in _grid_set.NUMBERS:
+		_try_open_neighbours(coord)
+		return
+	
+	if id != _grid_set.CELL:
 		return
 	
 	if _has_mine(coord):
@@ -43,6 +49,7 @@ func open_cell(coord: Vector2i) -> void:
 		var mines:=_get_surrounded_mines(coord)
 		if mines>0:
 			_set_cell(coord, _grid_set.NUMBERS[mines-1])
+			_try_open_neighbours(coord)
 		else:
 			_set_cell(coord, _grid_set.EMPTY_CELL)
 			_open_empty_cells_recursive(coord)
@@ -52,6 +59,17 @@ func open_cell(coord: Vector2i) -> void:
 		if _opened_cells == (_grid_size.x * _grid_size.y) - _mines_coords.size():
 			_is_game_over=true
 	pass
+
+func _try_open_neighbours(coord: Vector2i) -> void:
+	var mines:=_get_surrounded_mines(coord)
+	var flags:=_get_surrounded_flags(coord)
+	
+	if flags >= mines:
+		for x in range(-1, 2):
+			for y in range(-1, 2):
+				var c := coord + Vector2i(x, y)
+				if _get_cell_id(c) == _grid_set.CELL:
+					open_cell(c)
 
 func _open_all_mines() -> void:
 	for x in _mines_coords:
@@ -63,6 +81,15 @@ func _open_empty_cells_recursive(coord:Vector2i) -> void:
 			var c := coord + Vector2i(x, y)
 			if not _has_mine(c):
 				open_cell(c)
+
+func _get_surrounded_flags(coord:Vector2i)->int:
+	var flags:=0
+	for x in range(-1, 2):
+		for y in range(-1, 2):
+			var c := coord + Vector2i(x, y)
+			if _get_cell_id(c) == _grid_set.FLAG_CELL:
+				flags+=1
+	return flags
 
 func _get_surrounded_mines(coord:Vector2i)->int:
 	var mines:=0

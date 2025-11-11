@@ -1,4 +1,4 @@
-[gd_resource type="TileSet" load_steps=4 format=3 uid="uid://bcayd3dtu5q6x"]
+[gd_resource type="TileSet" script_class="GameGridSet" load_steps=4 format=3 uid="uid://bcayd3dtu5q6x"]
 
 [ext_resource type="Script" uid="uid://bsl30801irnc6" path="res://assets/game_grid_set.gd" id="1_2a1fd"]
 [ext_resource type="Texture2D" uid="uid://btpw4my5javxy" path="res://assets/cells.png" id="1_r88el"]
