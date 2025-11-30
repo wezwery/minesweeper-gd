@@ -8,6 +8,7 @@ var _mines_coords : Array[Vector2i] = []
 var _opened_cells := 0
 var _grid_size:Vector2i
 var _is_game_over:=false
+var _game_id:int=0
 
 @export var camera : Camera2D
 @export var opened_cell_particle : GPUParticles2D
@@ -72,6 +73,7 @@ func _create_opened_cell_particle(coord: Vector2i) -> void:
 	get_parent().add_child(ins)
 
 func _try_open_neighbours(coord: Vector2i) -> void:
+	var temp_game_id:=_game_id
 	var mines:=_get_surrounded_mines(coord)
 	var flags:=_get_surrounded_flags(coord)
 	
@@ -82,6 +84,8 @@ func _try_open_neighbours(coord: Vector2i) -> void:
 				if _get_cell_id(c) == _grid_set.CELL:
 					open_cell(c)
 					await get_tree().create_timer(OPEN_CELLS_DELAY).timeout
+					if temp_game_id != _game_id:
+						return
 
 func _open_all_mines() -> void:
 	for x in _mines_coords:
@@ -94,12 +98,15 @@ func _open_all_mines() -> void:
 				_set_cell(coord, _grid_set.WRONG_FLAG_CELL)
 
 func _open_empty_cells_recursive(coord:Vector2i) -> void:
+	var temp_game_id:=_game_id
 	for x in range(-1, 2):
 		for y in range(-1, 2):
 			var c := coord + Vector2i(x, y)
 			if not _has_mine(c):
 				open_cell(c)
 				await get_tree().create_timer(OPEN_CELLS_DELAY).timeout
+				if temp_game_id != _game_id:
+					return
 
 func _get_surrounded_flags(coord:Vector2i)->int:
 	var flags:=0
@@ -153,6 +160,7 @@ func generate_grid(width:int, height:int, mines:int) -> void:
 	_grid_size = Vector2i(width,height)
 	_is_game_over=false
 	_opened_cells = 0
+	_game_id += 1
 
 	clear()
 	
