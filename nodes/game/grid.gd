@@ -1,5 +1,8 @@
 extends TileMapLayer
 
+const OPEN_CELLS_DELAY : float = 0.05
+const OPENED_CELL_PARTICLE = preload("uid://dsldgrg6c5kf0")
+
 var _grid_set : GameGridSet = tile_set
 var _mines_coords : Array[Vector2i] = []
 var _opened_cells := 0
@@ -7,6 +10,7 @@ var _grid_size:Vector2i
 var _is_game_over:=false
 
 @export var camera : Camera2D
+@export var opened_cell_particle : GPUParticles2D
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.is_pressed():
@@ -54,11 +58,18 @@ func open_cell(coord: Vector2i) -> void:
 			_set_cell(coord, _grid_set.EMPTY_CELL)
 			_open_empty_cells_recursive(coord)
 		
+		_create_opened_cell_particle(coord)
+		
 		_opened_cells += 1
 		
 		if _opened_cells == (_grid_size.x * _grid_size.y) - _mines_coords.size():
 			_is_game_over=true
 	pass
+
+func _create_opened_cell_particle(coord: Vector2i) -> void:
+	var ins : Node2D = OPENED_CELL_PARTICLE.instantiate()
+	ins.position = Vector2(coord * _grid_set.CELL_SIZE) + _grid_set.CELL_SIZE * 0.5
+	get_parent().add_child(ins)
 
 func _try_open_neighbours(coord: Vector2i) -> void:
 	var mines:=_get_surrounded_mines(coord)
@@ -70,6 +81,7 @@ func _try_open_neighbours(coord: Vector2i) -> void:
 				var c := coord + Vector2i(x, y)
 				if _get_cell_id(c) == _grid_set.CELL:
 					open_cell(c)
+					await get_tree().create_timer(OPEN_CELLS_DELAY).timeout
 
 func _open_all_mines() -> void:
 	for x in _mines_coords:
@@ -87,6 +99,7 @@ func _open_empty_cells_recursive(coord:Vector2i) -> void:
 			var c := coord + Vector2i(x, y)
 			if not _has_mine(c):
 				open_cell(c)
+				await get_tree().create_timer(OPEN_CELLS_DELAY).timeout
 
 func _get_surrounded_flags(coord:Vector2i)->int:
 	var flags:=0

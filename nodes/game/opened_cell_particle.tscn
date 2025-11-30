@@ -1,0 +1,42 @@
+[gd_scene load_steps=4 format=3 uid="uid://dsldgrg6c5kf0"]
+
+[ext_resource type="Texture2D" uid="uid://btpw4my5javxy" path="res://assets/cells.png" id="1_b6vau"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7r1kq"]
+atlas = ExtResource("1_b6vau")
+region = Rect2(16, 32, 16, 16)
+
+[sub_resource type="GDScript" id="GDScript_b6vau"]
+script/source = "extends Sprite2D
+
+const GRAVITY : float = 980
+
+@onready var duration: Timer = $duration
+
+var _velocity:Vector2
+var _angular:float
+
+func _ready() -> void:
+	_angular = deg_to_rad(randf_range(-25, 25))
+	_velocity = Vector2.UP.rotated(deg_to_rad(randf_range(-22.5, 22.5))) * randf_range(100, 200)
+	create_tween().tween_property(self, \"modulate:a\", 0.0, duration.wait_time).set_trans(Tween.TRANS_CUBIC)
+
+func _process(delta: float) -> void:
+	_velocity.y += GRAVITY * delta
+	position += _velocity * delta
+	rotation += _angular * delta
+
+func _on_duration_timeout() -> void:
+	queue_free()
+"
+
+[node name="opened_cell_particle" type="Sprite2D"]
+texture = SubResource("AtlasTexture_7r1kq")
+script = SubResource("GDScript_b6vau")
+
+[node name="duration" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true
+autostart = true
+
+[connection signal="timeout" from="duration" to="." method="_on_duration_timeout"]
