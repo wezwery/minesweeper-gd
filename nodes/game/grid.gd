@@ -36,14 +36,14 @@ func _switch_cell(coord: Vector2i)->void:
 	elif id == _grid_set.UNKNOWN_CELL:
 		_set_cell(coord, _grid_set.CELL)
 
-func open_cell(coord: Vector2i) -> void:
+func open_cell(coord: Vector2i, force:bool=false) -> void:
 	var id:= _get_cell_id(coord)
 	
 	if id in _grid_set.NUMBERS:
 		_try_open_neighbours(coord)
 		return
 	
-	if id != _grid_set.CELL:
+	if id != _grid_set.CELL and not force:
 		return
 	
 	if _has_mine(coord):
@@ -81,8 +81,9 @@ func _try_open_neighbours(coord: Vector2i) -> void:
 		for x in range(-1, 2):
 			for y in range(-1, 2):
 				var c := coord + Vector2i(x, y)
-				if _get_cell_id(c) == _grid_set.CELL:
-					open_cell(c)
+				var id := _get_cell_id(c)
+				if id == _grid_set.CELL or id == _grid_set.UNKNOWN_CELL:
+					open_cell(c, true)
 					await get_tree().create_timer(OPEN_CELLS_DELAY).timeout
 					if temp_game_id != _game_id:
 						return
