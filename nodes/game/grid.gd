@@ -85,7 +85,7 @@ func _try_open_neighbours(coord: Vector2i) -> void:
 				if id == _grid_set.CELL or id == _grid_set.UNKNOWN_CELL:
 					open_cell(c, true)
 					await get_tree().create_timer(OPEN_CELLS_DELAY).timeout
-					if temp_game_id != _game_id:
+					if temp_game_id != _game_id or _is_game_over:
 						return
 
 func _open_all_mines() -> void:
@@ -106,7 +106,7 @@ func _open_empty_cells_recursive(coord:Vector2i) -> void:
 			if not _has_mine(c):
 				open_cell(c)
 				await get_tree().create_timer(OPEN_CELLS_DELAY).timeout
-				if temp_game_id != _game_id:
+				if temp_game_id != _game_id or _is_game_over:
 					return
 
 func _get_surrounded_flags(coord:Vector2i)->int:
@@ -147,7 +147,7 @@ func generate_easy_grid(width:int, height:int) -> void:
 	@warning_ignore("integer_division")
 	generate_grid(width, height, (width * height) / 8)
 	
-func generate_normal_grid(width:int, height:int) -> void:
+func generate_medium_grid(width:int, height:int) -> void:
 	@warning_ignore("integer_division")
 	generate_grid(width, height, (width * height) / 4)
 	
