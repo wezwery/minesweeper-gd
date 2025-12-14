@@ -16,13 +16,12 @@ func _ready() -> void:
 	grid.losed.connect(_on_lose)
 	grid.winned.connect(_on_win)
 
-func _on_lose() -> void:
-	var mines:=grid.get_real_mines_left_count()
+func _on_lose(mines_left:int) -> void:
 	mines_left_label.text = \"Lose! Mines left: {0} / {1} ({2}%)\".format(
 		[
-			mines,
+			mines_left,
 			grid._mines_coords.size(),
-			100.0 - float(mines) / float(grid._mines_coords.size()) * 100.0,
+			int(100.0 - float(mines_left) / float(grid._mines_coords.size()) * 100.0),
 		])
 
 func _on_win()->void:

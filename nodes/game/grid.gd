@@ -3,7 +3,7 @@ class_name GameGrid
 
 signal cell_switched(index : Vector2i)
 signal grid_generated(size : Vector2i, mines_coords: Array[Vector2i])
-signal losed()
+signal losed(mines_left:int)
 signal winned()
 
 const OPEN_CELLS_DELAY : float = 0.05
@@ -82,10 +82,11 @@ func open_cell(coord: Vector2i, force:bool=false) -> void:
 	pass
 
 func _lose(coord: Vector2i) -> void:
+	var mines_left:=get_real_mines_left_count()
 	_open_all_mines()
 	_set_cell(coord, _grid_set.EXPLODE_MINE_CELL)
 	_is_game_over=true
-	losed.emit()
+	losed.emit(mines_left)
 	print("Lose!")
 
 func _win() -> void:
@@ -107,7 +108,7 @@ func get_fake_mines_left_count() -> int:
 	return _mines_coords.size() - get_cells_count(_grid_set.FLAG_CELL)
 
 func get_real_mines_left_count() -> int:
-	var flags : int =0
+	var flags : int = 0
 	for coord in _mines_coords:
 		if _get_cell_id(coord) == _grid_set.FLAG_CELL:
 			flags+= 1
