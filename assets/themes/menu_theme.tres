@@ -1,0 +1,10 @@
+[gd_resource type="Theme" load_steps=2 format=3 uid="uid://c43c3s3wn2sd3"]
+
+[ext_resource type="FontFile" uid="uid://d02sximopnwwt" path="res://assets/BlockZone.ttf" id="1_3jc4x"]
+
+[resource]
+Button/fonts/font = ExtResource("1_3jc4x")
+Label/fonts/font = ExtResource("1_3jc4x")
+LineEdit/fonts/font = ExtResource("1_3jc4x")
+OptionButton/fonts/font = ExtResource("1_3jc4x")
+PopupMenu/fonts/font = ExtResource("1_3jc4x")

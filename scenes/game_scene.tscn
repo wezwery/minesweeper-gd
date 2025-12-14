@@ -1,13 +1,52 @@
-[gd_scene load_steps=3 format=3 uid="uid://bqfk43mf78ly4"]
+[gd_scene load_steps=5 format=3 uid="uid://byn8mtlsmvy53"]
 
-[ext_resource type="Script" uid="uid://csfggqouu2unq" path="res://scenes/game_scene.gd" id="1_onqr8"]
-[ext_resource type="PackedScene" uid="uid://dkmc0aa45j6cx" path="res://nodes/game/grid.tscn" id="1_w5aja"]
+[ext_resource type="Script" uid="uid://dqrmn5bhigph5" path="res://scenes/game_scene.gd" id="1_onqr8"]
+[ext_resource type="Theme" uid="uid://c43c3s3wn2sd3" path="res://assets/themes/menu_theme.tres" id="2_bw6k5"]
+[ext_resource type="PackedScene" uid="uid://eh74x0upw1vi" path="res://scenes/game/game_container.tscn" id="2_onqr8"]
+[ext_resource type="PackedScene" uid="uid://bobyryy44ucq6" path="res://scenes/menu/menu_container.tscn" id="3_ycayy"]
 
-[node name="game_scene" type="Node2D"]
+[node name="game_scene" type="CanvasLayer" node_paths=PackedStringArray("game_container", "menu_container")]
 script = ExtResource("1_onqr8")
+game_container = NodePath("Control/game_container")
+menu_container = NodePath("Control/MarginContainer/menu_container")
 
-[node name="grid" parent="." node_paths=PackedStringArray("camera") instance=ExtResource("1_w5aja")]
-camera = NodePath("../camera")
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_bw6k5")
 
-[node name="camera" type="Camera2D" parent="."]
-zoom = Vector2(2.5, 2.5)
+[node name="game_container" parent="Control" instance=ExtResource("2_onqr8")]
+visible = false
+layout_mode = 1
+
+[node name="game_info" parent="Control/game_container" index="0" node_paths=PackedStringArray("menu_container")]
+menu_container = NodePath("../../MarginContainer/menu_container")
+
+[node name="SubViewport" parent="Control/game_container/game_view/AspectRatioContainer/SubViewportContainer" index="0"]
+size = Vector2i(2, 2)
+render_target_update_mode = 0
+
+[node name="MarginContainer" type="MarginContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="menu_container" parent="Control/MarginContainer" node_paths=PackedStringArray("game_container", "grid") instance=ExtResource("3_ycayy")]
+layout_mode = 2
+game_container = NodePath("../../game_container")
+grid = NodePath("../../game_container/game_view/AspectRatioContainer/SubViewportContainer/SubViewport/grid")
+
+[editable path="Control/game_container"]
+[editable path="Control/game_container/game_view"]

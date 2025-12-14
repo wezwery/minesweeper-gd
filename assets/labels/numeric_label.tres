@@ -1,0 +1,8 @@
+[gd_resource type="LabelSettings" load_steps=2 format=3 uid="uid://b7xlkw0mgmeu4"]
+
+[ext_resource type="FontFile" uid="uid://d02sximopnwwt" path="res://assets/BlockZone.ttf" id="1_vtr6y"]
+
+[resource]
+line_spacing = 0.0
+font = ExtResource("1_vtr6y")
+font_size = 32
