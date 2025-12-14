@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://bcn17yk5es8v"]
+[gd_scene load_steps=5 format=3 uid="uid://bcn17yk5es8v"]
 
 [ext_resource type="LabelSettings" uid="uid://b7xlkw0mgmeu4" path="res://assets/labels/numeric_label.tres" id="1_dhgsi"]
 
@@ -7,6 +7,7 @@ script/source = "extends Panel
 
 @export var grid : GameGrid
 @export var mines_left_label : Label
+@export var clock_timer: Timer
 
 @export var menu_container : Control
 
@@ -17,18 +18,22 @@ func _ready() -> void:
 	grid.winned.connect(_on_win)
 
 func _on_lose(mines_left:int) -> void:
-	mines_left_label.text = \"Lose! Mines left: {0} / {1} ({2}%)\".format(
-		[
-			mines_left,
-			grid._mines_coords.size(),
-			int(100.0 - float(mines_left) / float(grid._mines_coords.size()) * 100.0),
-		])
+	clock_timer.stop()
+	mines_left_label.text = \"Lose! {0}%\".format([int(100.0 - float(mines_left) / float(grid._mines_coords.size()) * 100.0)])
+	#mines_left_label.text = \"Lose! Mines left: {0} / {1} ({2}%)\".format(
+		#[
+			#mines_left,
+			#grid._mines_coords.size(),
+			#int(100.0 - float(mines_left) / float(grid._mines_coords.size()) * 100.0),
+		#])
 
 func _on_win()->void:
+	clock_timer.stop()
 	mines_left_label.text = \"Win!\"
 
 func _on_grid_generated(_size:Vector2i, mines_coords:Array[Vector2i])->void:
 	_update_mines_left_label(mines_coords.size())
+	clock_timer.reset()
 
 func _on_cell_switched(_index:Vector2i) -> void:
 	var fake_mines_left := grid.get_fake_mines_left_count()
@@ -44,13 +49,82 @@ func _on_menu_btn_pressed() -> void:
 	menu_container.show()
 "
 
-[node name="game_info" type="Panel" node_paths=PackedStringArray("mines_left_label")]
+[sub_resource type="GDScript" id="GDScript_aiqnj"]
+script/source = "extends Label
+
+func _on_clock_timer_updated(t: String) -> void:
+	text=t
+"
+
+[sub_resource type="GDScript" id="GDScript_dhgsi"]
+script/source = "extends Timer
+
+signal updated(time:String)
+
+var _total_seconds : int = 0
+
+func _ready() -> void:
+	timeout.connect(_on_timeout)
+
+func reset() -> void:
+	_total_seconds = 0
+	start()
+	_update()
+
+func _update()->void:
+	var t:String
+	if get_hours() > 0:
+		t = \"{0}:{1}:{2}\".format([get_hours_str(), get_minutes_str(), get_seconds_str()])
+	else:
+		t = \"{0}:{1}\".format([get_minutes_str(), get_seconds_str()])
+	
+	updated.emit(t)
+
+func _on_timeout() -> void:
+	_total_seconds += 1
+	_update()
+
+func get_minutes() -> int:
+	@warning_ignore(\"integer_division\")
+	return (_total_seconds / 60) % 60
+
+func get_minutes_str() -> String:
+	var m:= get_minutes()
+	if m < 10:
+		return \"0\" + str(m)
+	else:
+		return str(m)
+
+func get_hours() -> int:
+	@warning_ignore(\"integer_division\")
+	return _total_seconds / 120
+
+func get_hours_str() -> String:
+	var h := get_hours()
+	if h < 10:
+		return \"0\" + str(h)
+	else:
+		return str(h)
+
+func get_seconds()->int:
+	return _total_seconds % 60
+
+func get_seconds_str()->String:
+	var s:= get_seconds()
+	if s < 10:
+		return \"0\" + str(s)
+	else:
+		return str(s)
+"
+
+[node name="game_info" type="Panel" node_paths=PackedStringArray("mines_left_label", "clock_timer")]
 custom_minimum_size = Vector2(0, 50)
 anchors_preset = 10
 anchor_right = 1.0
 grow_horizontal = 2
 script = SubResource("GDScript_c6714")
 mines_left_label = NodePath("MarginContainer/control/mines_left_label")
+clock_timer = NodePath("MarginContainer/control/clock_label/clock_timer")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -75,16 +149,36 @@ offset_right = 68.0
 grow_vertical = 2
 text = "Menu"
 
-[node name="mines_left_label" type="Label" parent="MarginContainer/control"]
+[node name="clock_label" type="Label" parent="MarginContainer/control"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "01"
+text = "00:00"
 label_settings = ExtResource("1_dhgsi")
 horizontal_alignment = 1
 vertical_alignment = 1
+script = SubResource("GDScript_aiqnj")
+
+[node name="clock_timer" type="Timer" parent="MarginContainer/control/clock_label"]
+ignore_time_scale = true
+script = SubResource("GDScript_dhgsi")
+
+[node name="mines_left_label" type="Label" parent="MarginContainer/control"]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -36.0
+grow_horizontal = 0
+grow_vertical = 2
+text = "01"
+label_settings = ExtResource("1_dhgsi")
+horizontal_alignment = 2
+vertical_alignment = 1
 
 [connection signal="pressed" from="MarginContainer/control/menu_btn" to="." method="_on_menu_btn_pressed"]
+[connection signal="updated" from="MarginContainer/control/clock_label/clock_timer" to="MarginContainer/control/clock_label" method="_on_clock_timer_updated"]
