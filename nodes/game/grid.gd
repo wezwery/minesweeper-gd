@@ -90,9 +90,14 @@ func _lose(coord: Vector2i) -> void:
 	print("Lose!")
 
 func _win() -> void:
+	_set_all_mines_to_flags()
 	_is_game_over=true
 	winned.emit()
 	print("Win!")
+
+func _set_all_mines_to_flags() -> void:
+	for i in _mines_coords:
+		_set_cell(i, _grid_set.FLAG_CELL)
 
 func get_cells_count(id:Vector2i) -> int:
 	var count:int=0
