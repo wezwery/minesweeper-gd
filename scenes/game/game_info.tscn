@@ -86,7 +86,7 @@ func _on_timeout() -> void:
 
 func get_minutes() -> int:
 	@warning_ignore(\"integer_division\")
-	return (_total_seconds / 60) % 60
+	return (_total_seconds % 3600) / 60
 
 func get_minutes_str() -> String:
 	var m:= get_minutes()
@@ -97,7 +97,7 @@ func get_minutes_str() -> String:
 
 func get_hours() -> int:
 	@warning_ignore(\"integer_division\")
-	return _total_seconds / 120
+	return _total_seconds / 3600
 
 func get_hours_str() -> String:
 	var h := get_hours()
