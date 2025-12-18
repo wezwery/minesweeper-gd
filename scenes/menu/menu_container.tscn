@@ -1,0 +1,229 @@
+[gd_scene load_steps=6 format=3 uid="uid://bobyryy44ucq6"]
+
+[ext_resource type="LabelSettings" uid="uid://dsr1iomyaxudg" path="res://assets/labels/text_label_x2.tres" id="1_fp4o8"]
+[ext_resource type="Script" uid="uid://0wl3brsf5ysc" path="res://scenes/menu/menu_container.gd" id="2_gkl53"]
+[ext_resource type="LabelSettings" uid="uid://b3kew4y5gm2k0" path="res://assets/labels/text_label.tres" id="2_v4hmh"]
+
+[sub_resource type="GDScript" id="GDScript_v4hmh"]
+script/source = "extends OptionButton
+
+const EASY = [\"Easy\", 12.0]
+const MEDIUM = [\"Medium\", 25.0]
+const HARD = [\"Hard\", 50.0]
+const CUSTOM = [\"Custom\", 0]
+
+const DIFFICULTIES = [EASY, MEDIUM, HARD, CUSTOM]
+
+@export var custom_difficulty: SpinBox
+
+func _ready() -> void:
+	clear()
+	for i in DIFFICULTIES:
+		add_item(i[0])
+	select(0)
+
+func get_difficulty_percent() -> float:
+	if selected == item_count - 1:
+		return custom_difficulty.value
+	else:
+		return DIFFICULTIES[selected][1]
+
+func _on_item_selected(index: int) -> void:
+	custom_difficulty.visible = index == item_count - 1
+"
+
+[sub_resource type="GDScript" id="GDScript_gkl53"]
+script/source = "extends OptionButton
+
+const SIZES : Array[Vector2i] = \\
+[
+	Vector2i(8, 8),
+	Vector2i(16, 16),
+	Vector2i(32, 32),
+	Vector2i(64, 64),
+	Vector2i(-1, -1)
+]
+
+@export var custom_size: HBoxContainer
+@export var size_x: SpinBox
+@export var size_y: SpinBox
+
+func _ready() -> void:
+	clear()
+	for i in SIZES:
+		if i.x < 0:
+			add_item(\"Custom\")
+		else:
+			add_item(\"{0}x{1}\".format([i.x,i.y]))
+	select(1)
+
+func get_grid_size() -> Vector2i:
+	if selected == item_count - 1:
+		return Vector2i(int(size_x.value),int(size_y.value))
+	else:
+		return SIZES[selected]
+
+func _on_item_selected(index: int) -> void:
+	custom_size.visible = index == item_count - 1
+"
+
+[node name="menu_container" type="VBoxContainer" node_paths=PackedStringArray("difficulty", "grid_size")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_gkl53")
+difficulty = NodePath("difficulty_panel/MarginContainer/CenterContainer/hbox_container/difficulty")
+grid_size = NodePath("grid_size_panel/MarginContainer/CenterContainer/hbox_container/grid_size")
+
+[node name="title" type="Panel" parent="."]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="label" type="Label" parent="title"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Minesweeper"
+label_settings = ExtResource("1_fp4o8")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="difficulty_panel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="difficulty_panel"]
+layout_mode = 2
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="CenterContainer" type="CenterContainer" parent="difficulty_panel/MarginContainer"]
+layout_mode = 2
+
+[node name="hbox_container" type="VBoxContainer" parent="difficulty_panel/MarginContainer/CenterContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="difficulty_panel/MarginContainer/CenterContainer/hbox_container"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Difficulty"
+label_settings = ExtResource("2_v4hmh")
+
+[node name="difficulty" type="OptionButton" parent="difficulty_panel/MarginContainer/CenterContainer/hbox_container" node_paths=PackedStringArray("custom_difficulty")]
+layout_mode = 2
+size_flags_horizontal = 4
+selected = 0
+item_count = 4
+popup/item_0/text = "Easy"
+popup/item_0/id = 0
+popup/item_1/text = "Medium"
+popup/item_1/id = 1
+popup/item_2/text = "Hard"
+popup/item_2/id = 2
+popup/item_3/text = "Custom"
+popup/item_3/id = 3
+script = SubResource("GDScript_v4hmh")
+custom_difficulty = NodePath("../custom_difficulty")
+
+[node name="custom_difficulty" type="SpinBox" parent="difficulty_panel/MarginContainer/CenterContainer/hbox_container"]
+visible = false
+layout_mode = 2
+min_value = 1.0
+max_value = 99.0
+value = 50.0
+alignment = 1
+suffix = "%"
+custom_arrow_step = 1.0
+
+[node name="grid_size_panel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="grid_size_panel"]
+layout_mode = 2
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="CenterContainer" type="CenterContainer" parent="grid_size_panel/MarginContainer"]
+layout_mode = 2
+
+[node name="hbox_container" type="VBoxContainer" parent="grid_size_panel/MarginContainer/CenterContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="grid_size_panel/MarginContainer/CenterContainer/hbox_container"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Grid size"
+label_settings = ExtResource("2_v4hmh")
+
+[node name="grid_size" type="OptionButton" parent="grid_size_panel/MarginContainer/CenterContainer/hbox_container" node_paths=PackedStringArray("custom_size", "size_x", "size_y")]
+layout_mode = 2
+size_flags_horizontal = 4
+selected = 0
+item_count = 6
+popup/item_0/text = "8x8"
+popup/item_0/id = 0
+popup/item_1/text = "16x16"
+popup/item_1/id = 1
+popup/item_2/text = "32x32"
+popup/item_2/id = 2
+popup/item_3/text = "64x64"
+popup/item_3/id = 3
+popup/item_4/text = "128x128"
+popup/item_4/id = 4
+popup/item_5/text = "Custom"
+popup/item_5/id = 5
+script = SubResource("GDScript_gkl53")
+custom_size = NodePath("../custom_size")
+size_x = NodePath("../custom_size/size_x")
+size_y = NodePath("../custom_size/size_y")
+
+[node name="custom_size" type="HBoxContainer" parent="grid_size_panel/MarginContainer/CenterContainer/hbox_container"]
+visible = false
+layout_mode = 2
+
+[node name="size_x" type="SpinBox" parent="grid_size_panel/MarginContainer/CenterContainer/hbox_container/custom_size"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+min_value = 2.0
+max_value = 500.0
+value = 32.0
+alignment = 1
+custom_arrow_step = 1.0
+
+[node name="Label" type="Label" parent="grid_size_panel/MarginContainer/CenterContainer/hbox_container/custom_size"]
+custom_minimum_size = Vector2(25, 0)
+layout_mode = 2
+text = "X"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="size_y" type="SpinBox" parent="grid_size_panel/MarginContainer/CenterContainer/hbox_container/custom_size"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+min_value = 2.0
+max_value = 500.0
+value = 32.0
+alignment = 1
+custom_arrow_step = 1.0
+
+[node name="HSeparator" type="HSeparator" parent="."]
+self_modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Play" type="Button" parent="."]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Play"
+
+[connection signal="item_selected" from="difficulty_panel/MarginContainer/CenterContainer/hbox_container/difficulty" to="difficulty_panel/MarginContainer/CenterContainer/hbox_container/difficulty" method="_on_item_selected"]
+[connection signal="item_selected" from="grid_size_panel/MarginContainer/CenterContainer/hbox_container/grid_size" to="grid_size_panel/MarginContainer/CenterContainer/hbox_container/grid_size" method="_on_item_selected"]
+[connection signal="pressed" from="Play" to="." method="_on_play_pressed"]

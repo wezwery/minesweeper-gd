@@ -1,0 +1,50 @@
+[gd_scene load_steps=3 format=3 uid="uid://0tsaux1vir4x"]
+
+[ext_resource type="PackedScene" uid="uid://dkmc0aa45j6cx" path="res://nodes/game/grid.tscn" id="1_sxd85"]
+
+[sub_resource type="GDScript" id="GDScript_spfe0"]
+script/source = "extends AspectRatioContainer
+
+@onready var sub_viewport: SubViewport = $SubViewportContainer/SubViewport
+
+func _on_sub_viewport_size_changed() -> void:
+	if sub_viewport:
+		ratio = float(sub_viewport.size_2d_override.x) / float(sub_viewport.size_2d_override.y)
+"
+
+[node name="game_view" type="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_spfe0")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="AspectRatioContainer"]
+layout_mode = 2
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="AspectRatioContainer/SubViewportContainer"]
+disable_3d = true
+transparent_bg = true
+handle_input_locally = false
+snap_2d_vertices_to_pixel = true
+canvas_item_default_texture_filter = 0
+oversampling = false
+size = Vector2i(640, 640)
+size_2d_override_stretch = true
+render_target_update_mode = 4
+
+[node name="grid" parent="AspectRatioContainer/SubViewportContainer/SubViewport" node_paths=PackedStringArray("viewport") instance=ExtResource("1_sxd85")]
+viewport = NodePath("..")
+
+[connection signal="size_changed" from="AspectRatioContainer/SubViewportContainer/SubViewport" to="AspectRatioContainer" method="_on_sub_viewport_size_changed"]

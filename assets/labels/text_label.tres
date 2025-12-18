@@ -1,0 +1,6 @@
+[gd_resource type="LabelSettings" load_steps=2 format=3 uid="uid://b3kew4y5gm2k0"]
+
+[ext_resource type="FontFile" uid="uid://d02sximopnwwt" path="res://assets/BlockZone.ttf" id="1_4jqtn"]
+
+[resource]
+font = ExtResource("1_4jqtn")

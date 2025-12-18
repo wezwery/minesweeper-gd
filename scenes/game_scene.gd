@@ -1,4 +1,8 @@
-extends Node2D
+extends CanvasLayer
+
+@export var game_container: VBoxContainer
+@export var menu_container: MenuContainer
 
 func _ready() -> void:
-	$grid.generate_easy_grid(16, 16)
+	game_container.hide()
+	menu_container.show()
