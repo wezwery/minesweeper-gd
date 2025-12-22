@@ -57,10 +57,6 @@ func _update_mines_left_label(mines: int)->void:
 func _on_menu_btn_pressed() -> void:
 	get_parent().hide()
 	menu_container.show()
-
-func _process(delta: float) -> void:
-	if Input.is_action_just_pressed(\"debug_f1\"):
-		_on_win()
 "
 
 [sub_resource type="GDScript" id="GDScript_aiqnj"]
