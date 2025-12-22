@@ -2,17 +2,19 @@ extends TileMapLayer
 class_name GameGrid
 
 signal cell_switched(index : Vector2i)
-signal grid_generated(size : Vector2i, mines_coords: Array[Vector2i])
+signal cell_opened(index : Vector2i)
+signal grid_generated(preset : GamePreset, mines_coords: Array[Vector2i])
 signal losed(mines_left:int)
 signal winned()
 
 const OPEN_CELLS_DELAY : float = 0.05
 const OPENED_CELL_PARTICLE = preload("uid://dsldgrg6c5kf0")
 
+var current_game_preset : GamePreset
+
 var _grid_set : GameGridSet = tile_set
 var _mines_coords : Array[Vector2i] = []
 var _opened_cells := 0
-var _grid_size:Vector2i
 var _is_game_over:=false
 var _game_id:int=0
 
@@ -24,7 +26,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _is_cell_coord_valid(cell):
 			get_viewport().set_input_as_handled()
 			if _is_game_over:
-				generate_grid(_grid_size.x, _grid_size.y, _mines_coords.size())
+				generate_grid(current_game_preset)
 			else:
 				if event.button_index == MouseButton.MOUSE_BUTTON_LEFT:
 					open_cell(cell)
@@ -76,6 +78,7 @@ func open_cell(coord: Vector2i, force:bool=false) -> void:
 		_create_opened_cell_particle(coord)
 		
 		_opened_cells += 1
+		cell_opened.emit(coord)
 		
 		if get_closed_cells_count() - _mines_coords.size() == 0:
 			_win()
@@ -101,8 +104,8 @@ func _set_all_mines_to_flags() -> void:
 
 func get_cells_count(id:Vector2i) -> int:
 	var count:int=0
-	for x in _grid_size.x:
-		for y in _grid_size.y:
+	for x in current_game_preset.grid_size.x:
+		for y in current_game_preset.grid_size.y:
 			var coord:=Vector2i(x,y)
 			var _id:=_get_cell_id(coord)
 			if id == _id:
@@ -120,7 +123,7 @@ func get_real_mines_left_count() -> int:
 	return _mines_coords.size() - flags
 
 func get_closed_cells_count() -> int:
-	return (_grid_size.x * _grid_size.y) - _opened_cells
+	return (current_game_preset.grid_size.x * current_game_preset.grid_size.y) - _opened_cells
 
 func _create_opened_cell_particle(coord: Vector2i) -> void:
 	var ins : Node2D = OPENED_CELL_PARTICLE.instantiate()
@@ -147,8 +150,8 @@ func _open_all_mines() -> void:
 	for x in _mines_coords:
 		_set_cell(x, _grid_set.MINE_CELL)
 	
-	for x in _grid_size.x:
-		for y in _grid_size.y:
+	for x in current_game_preset.grid_size.x:
+		for y in current_game_preset.grid_size.y:
 			var coord:=Vector2i(x,y)
 			if _get_cell_id(coord) == _grid_set.FLAG_CELL:
 				_set_cell(coord, _grid_set.WRONG_FLAG_CELL)
@@ -189,29 +192,21 @@ func _get_cell_id(coord: Vector2i) -> Vector2i:
 
 func _is_cell_coord_valid(coord: Vector2i) -> bool:
 	return coord.x > -1 and coord.y > -1 and \
-		   coord.x < _grid_size.x and coord.y < _grid_size.y
+		   coord.x < current_game_preset.grid_size.x and coord.y < current_game_preset.grid_size.y
 
 func _get_cell_coord() -> Vector2i:
 	return Vector2i(get_local_mouse_position()) / _grid_set.CELL_SIZE
 
-func generate_easy_grid(width:int, height:int) -> void:
-	@warning_ignore("integer_division")
-	generate_grid(width, height, (width * height) / 8)
+func generate_grid(preset:GamePreset) -> void:
+	var width := preset.grid_size.x
+	var height := preset.grid_size.y
+	var mines:=preset.difficulty.calculate_mines(preset.grid_size)
 	
-func generate_medium_grid(width:int, height:int) -> void:
-	@warning_ignore("integer_division")
-	generate_grid(width, height, (width * height) / 4)
-	
-func generate_hard_grid(width:int, height:int) -> void:
-	@warning_ignore("integer_division")
-	generate_grid(width, height, (width * height) / 2)
-
-func generate_grid(width:int, height:int, mines:int) -> void:
 	assert(width * height > mines, "Количество мин должно быть меньше количества клеток!")
 
 	_reset()
 	
-	_grid_size = Vector2i(width,height)
+	current_game_preset = preset
 	_game_id += 1
 
 	clear()
@@ -234,7 +229,7 @@ func generate_grid(width:int, height:int, mines:int) -> void:
 		_mines_coords[mines_populate] = cell_coords.pop_at(randi_range(0, cell_coords.size() - 1))
 		mines_populate += 1
 	
-	grid_generated.emit(_grid_size, _mines_coords)
+	grid_generated.emit(current_game_preset, _mines_coords)
 	print("Grid: {0}x{1} ({2} cells) with {3} mines - generated!".format([width, height, width*height, mines]))
 	
 	_resize_viewport()
@@ -242,4 +237,4 @@ func generate_grid(width:int, height:int, mines:int) -> void:
 func _resize_viewport() -> void:
 	if not viewport:
 		return
-	viewport.size_2d_override = _grid_size * _grid_set.CELL_SIZE
+	viewport.size_2d_override = current_game_preset.grid_size * _grid_set.CELL_SIZE

@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="Sizes" load_steps=2 format=3 uid="uid://cjv4ye2l45bis"]
+
+[ext_resource type="Script" uid="uid://okfiqlc4nqiy" path="res://resources/grid_sizes.gd" id="1_jympe"]
+
+[resource]
+script = ExtResource("1_jympe")
+grids = Array[Vector2i]([Vector2i(8, 8), Vector2i(16, 16), Vector2i(32, 32), Vector2i(64, 64)])
+metadata/_custom_type_script = "uid://okfiqlc4nqiy"

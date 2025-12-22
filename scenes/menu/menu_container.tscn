@@ -1,32 +1,30 @@
-[gd_scene load_steps=6 format=3 uid="uid://bobyryy44ucq6"]
+[gd_scene load_steps=8 format=3 uid="uid://bobyryy44ucq6"]
 
 [ext_resource type="LabelSettings" uid="uid://dsr1iomyaxudg" path="res://assets/labels/text_label_x2.tres" id="1_fp4o8"]
+[ext_resource type="Theme" uid="uid://c43c3s3wn2sd3" path="res://assets/themes/menu_theme.tres" id="1_v4hmh"]
 [ext_resource type="Script" uid="uid://0wl3brsf5ysc" path="res://scenes/menu/menu_container.gd" id="2_gkl53"]
 [ext_resource type="LabelSettings" uid="uid://b3kew4y5gm2k0" path="res://assets/labels/text_label.tres" id="2_v4hmh"]
 
 [sub_resource type="GDScript" id="GDScript_v4hmh"]
 script/source = "extends OptionButton
 
-const EASY = [\"Easy\", 12.0]
-const MEDIUM = [\"Medium\", 25.0]
-const HARD = [\"Hard\", 50.0]
-const CUSTOM = [\"Custom\", 0]
-
-const DIFFICULTIES = [EASY, MEDIUM, HARD, CUSTOM]
-
 @export var custom_difficulty: SpinBox
 
 func _ready() -> void:
 	clear()
-	for i in DIFFICULTIES:
-		add_item(i[0])
+	for i in GameManager.DIFFICULTIES:
+		add_item(i.name)
+	add_item(GamePreset.CUSTOM_NAME)
 	select(0)
 
+func is_custom() -> bool:
+	return selected == item_count - 1
+
 func get_difficulty_percent() -> float:
-	if selected == item_count - 1:
+	if is_custom():
 		return custom_difficulty.value
 	else:
-		return DIFFICULTIES[selected][1]
+		return GameManager.DIFFICULTIES[selected].mines_populate
 
 func _on_item_selected(index: int) -> void:
 	custom_difficulty.visible = index == item_count - 1
@@ -35,36 +33,59 @@ func _on_item_selected(index: int) -> void:
 [sub_resource type="GDScript" id="GDScript_gkl53"]
 script/source = "extends OptionButton
 
-const SIZES : Array[Vector2i] = \\
-[
-	Vector2i(8, 8),
-	Vector2i(16, 16),
-	Vector2i(32, 32),
-	Vector2i(64, 64),
-	Vector2i(-1, -1)
-]
-
 @export var custom_size: HBoxContainer
 @export var size_x: SpinBox
 @export var size_y: SpinBox
 
 func _ready() -> void:
 	clear()
-	for i in SIZES:
-		if i.x < 0:
-			add_item(\"Custom\")
-		else:
-			add_item(\"{0}x{1}\".format([i.x,i.y]))
+	for i in GameManager.SIZES:
+		add_item(\"{0}x{1}\".format([i.x,i.y]))
+	add_item(GamePreset.CUSTOM_NAME)
 	select(1)
 
 func get_grid_size() -> Vector2i:
 	if selected == item_count - 1:
 		return Vector2i(int(size_x.value),int(size_y.value))
 	else:
-		return SIZES[selected]
+		return GameManager.SIZES[selected]
 
 func _on_item_selected(index: int) -> void:
 	custom_size.visible = index == item_count - 1
+"
+
+[sub_resource type="GDScript" id="GDScript_eokm8"]
+script/source = "extends PanelContainer
+
+const RECORD_ITEM = preload(\"uid://rj2ubcihas3i\")
+
+@export var empty_label: Label 
+@export var items_parent: VBoxContainer
+
+var _items : Array[RecordItem]
+
+func _ready() -> void:
+	(get_parent() as Control).visibility_changed.connect(_on_parent_visibility_changed)
+	_populate_items()
+
+func _on_parent_visibility_changed() -> void:
+	if not (get_parent() as Control).visible:
+		return
+	
+	_populate_items()
+
+func _populate_items() -> void:
+	for i in _items:
+		i.queue_free()
+	_items.clear()
+	
+	for r in GameManager.RECORDS:
+		var item : RecordItem = RECORD_ITEM.instantiate()
+		item.populate(r)
+		items_parent.add_child(item)
+		_items.append(item)
+	
+	empty_label.visible = _items.is_empty()
 "
 
 [node name="menu_container" type="VBoxContainer" node_paths=PackedStringArray("difficulty", "grid_size")]
@@ -73,6 +94,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("1_v4hmh")
 script = ExtResource("2_gkl53")
 difficulty = NodePath("difficulty_panel/MarginContainer/CenterContainer/hbox_container/difficulty")
 grid_size = NodePath("grid_size_panel/MarginContainer/CenterContainer/hbox_container/grid_size")
@@ -214,10 +236,43 @@ value = 32.0
 alignment = 1
 custom_arrow_step = 1.0
 
-[node name="HSeparator" type="HSeparator" parent="."]
-self_modulate = Color(1, 1, 1, 0)
+[node name="records_panel" type="PanelContainer" parent="." node_paths=PackedStringArray("empty_label", "items_parent")]
 layout_mode = 2
 size_flags_vertical = 3
+script = SubResource("GDScript_eokm8")
+empty_label = NodePath("MarginContainer/ScrollContainer/hbox_container/empty_label")
+items_parent = NodePath("MarginContainer/ScrollContainer/hbox_container")
+
+[node name="MarginContainer" type="MarginContainer" parent="records_panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="ScrollContainer" type="ScrollContainer" parent="records_panel/MarginContainer"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="hbox_container" type="VBoxContainer" parent="records_panel/MarginContainer/ScrollContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="title" type="Label" parent="records_panel/MarginContainer/ScrollContainer/hbox_container"]
+layout_mode = 2
+text = "Records"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="empty_label" type="Label" parent="records_panel/MarginContainer/ScrollContainer/hbox_container"]
+self_modulate = Color(1, 1, 1, 0.25)
+layout_mode = 2
+size_flags_vertical = 3
+text = "Empty"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Play" type="Button" parent="."]
 layout_mode = 2

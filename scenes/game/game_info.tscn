@@ -1,5 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://bcn17yk5es8v"]
+[gd_scene load_steps=6 format=3 uid="uid://bcn17yk5es8v"]
 
+[ext_resource type="Theme" uid="uid://c43c3s3wn2sd3" path="res://assets/themes/menu_theme.tres" id="1_aiqnj"]
 [ext_resource type="LabelSettings" uid="uid://b7xlkw0mgmeu4" path="res://assets/labels/numeric_label.tres" id="1_dhgsi"]
 
 [sub_resource type="GDScript" id="GDScript_c6714"]
@@ -8,38 +9,47 @@ script/source = "extends Panel
 @export var grid : GameGrid
 @export var mines_left_label : Label
 @export var clock_timer: Timer
+@export var new_record_text: RichTextLabel
 
 @export var menu_container : Control
+
+var _current_game_preset : GamePreset
+var _mines_count : int
 
 func _ready() -> void:
 	grid.cell_switched.connect(_on_cell_switched)
 	grid.grid_generated.connect(_on_grid_generated)
 	grid.losed.connect(_on_lose)
 	grid.winned.connect(_on_win)
+	grid.cell_opened.connect(_on_cell_opened)
 
 func _on_lose(mines_left:int) -> void:
 	clock_timer.stop()
 	mines_left_label.text = \"Lose! {0}%\".format([int(100.0 - float(mines_left) / float(grid._mines_coords.size()) * 100.0)])
-	#mines_left_label.text = \"Lose! Mines left: {0} / {1} ({2}%)\".format(
-		#[
-			#mines_left,
-			#grid._mines_coords.size(),
-			#int(100.0 - float(mines_left) / float(grid._mines_coords.size()) * 100.0),
-		#])
 
 func _on_win()->void:
 	clock_timer.stop()
 	mines_left_label.text = \"Win!\"
+	new_record_text.visible = GameManager.register_win(_current_game_preset, clock_timer._total_seconds)
 
-func _on_grid_generated(_size:Vector2i, mines_coords:Array[Vector2i])->void:
+func _on_grid_generated(preset:GamePreset, mines_coords:Array[Vector2i])->void:
 	_update_mines_left_label(mines_coords.size())
 	clock_timer.reset()
+	_current_game_preset = preset
+	_mines_count = mines_coords.size()
+	new_record_text.hide()
+
+func _on_cell_opened(_index:Vector2i)->void:
+	if clock_timer.is_stopped():
+		clock_timer.start()
 
 func _on_cell_switched(_index:Vector2i) -> void:
 	var fake_mines_left := grid.get_fake_mines_left_count()
 	var real_mines_left := grid.get_real_mines_left_count()
 	print(\"Mines: fake: {0}, real: {1}\".format([fake_mines_left, real_mines_left]))
 	_update_mines_left_label(fake_mines_left)
+	if clock_timer.is_stopped():
+		clock_timer.start()
 
 func _update_mines_left_label(mines: int)->void:
 	mines_left_label.text = str(mines)
@@ -47,6 +57,10 @@ func _update_mines_left_label(mines: int)->void:
 func _on_menu_btn_pressed() -> void:
 	get_parent().hide()
 	menu_container.show()
+
+func _process(delta: float) -> void:
+	if Input.is_action_just_pressed(\"debug_f1\"):
+		_on_win()
 "
 
 [sub_resource type="GDScript" id="GDScript_aiqnj"]
@@ -67,64 +81,28 @@ func _ready() -> void:
 	timeout.connect(_on_timeout)
 
 func reset() -> void:
+	stop()
 	_total_seconds = 0
-	start()
 	_update()
 
 func _update()->void:
-	var t:String
-	if get_hours() > 0:
-		t = \"{0}:{1}:{2}\".format([get_hours_str(), get_minutes_str(), get_seconds_str()])
-	else:
-		t = \"{0}:{1}\".format([get_minutes_str(), get_seconds_str()])
-	
-	updated.emit(t)
+	updated.emit(Tools.get_time(_total_seconds))
 
 func _on_timeout() -> void:
 	_total_seconds += 1
 	_update()
-
-func get_minutes() -> int:
-	@warning_ignore(\"integer_division\")
-	return (_total_seconds % 3600) / 60
-
-func get_minutes_str() -> String:
-	var m:= get_minutes()
-	if m < 10:
-		return \"0\" + str(m)
-	else:
-		return str(m)
-
-func get_hours() -> int:
-	@warning_ignore(\"integer_division\")
-	return _total_seconds / 3600
-
-func get_hours_str() -> String:
-	var h := get_hours()
-	if h < 10:
-		return \"0\" + str(h)
-	else:
-		return str(h)
-
-func get_seconds()->int:
-	return _total_seconds % 60
-
-func get_seconds_str()->String:
-	var s:= get_seconds()
-	if s < 10:
-		return \"0\" + str(s)
-	else:
-		return str(s)
 "
 
-[node name="game_info" type="Panel" node_paths=PackedStringArray("mines_left_label", "clock_timer")]
+[node name="game_info" type="Panel" node_paths=PackedStringArray("mines_left_label", "clock_timer", "new_record_text")]
 custom_minimum_size = Vector2(0, 50)
 anchors_preset = 10
 anchor_right = 1.0
 grow_horizontal = 2
+theme = ExtResource("1_aiqnj")
 script = SubResource("GDScript_c6714")
-mines_left_label = NodePath("MarginContainer/control/mines_left_label")
+mines_left_label = NodePath("MarginContainer/control/right container/mines_left_label")
 clock_timer = NodePath("MarginContainer/control/clock_label/clock_timer")
+new_record_text = NodePath("MarginContainer/control/left container/new record text")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -141,13 +119,32 @@ theme_override_constants/margin_bottom = 5
 [node name="control" type="Control" parent="MarginContainer"]
 layout_mode = 2
 
-[node name="menu_btn" type="Button" parent="MarginContainer/control"]
+[node name="left container" type="HBoxContainer" parent="MarginContainer/control"]
 layout_mode = 1
-anchors_preset = 9
+anchors_preset = 15
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = 68.0
+grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="menu_btn" type="Button" parent="MarginContainer/control/left container"]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
 text = "Menu"
+
+[node name="new record text" type="RichTextLabel" parent="MarginContainer/control/left container"]
+visible = false
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 2
+bbcode_enabled = true
+text = "[wave amp=25.0 freq=5.0 connected=1]New record![/wave]"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="clock_label" type="Label" parent="MarginContainer/control"]
 layout_mode = 1
@@ -166,19 +163,22 @@ script = SubResource("GDScript_aiqnj")
 ignore_time_scale = true
 script = SubResource("GDScript_dhgsi")
 
-[node name="mines_left_label" type="Label" parent="MarginContainer/control"]
+[node name="right container" type="HBoxContainer" parent="MarginContainer/control"]
 layout_mode = 1
-anchors_preset = 11
-anchor_left = 1.0
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -36.0
-grow_horizontal = 0
+grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+alignment = 2
+
+[node name="mines_left_label" type="Label" parent="MarginContainer/control/right container"]
+layout_mode = 2
 text = "01"
 label_settings = ExtResource("1_dhgsi")
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[connection signal="pressed" from="MarginContainer/control/menu_btn" to="." method="_on_menu_btn_pressed"]
+[connection signal="pressed" from="MarginContainer/control/left container/menu_btn" to="." method="_on_menu_btn_pressed"]
 [connection signal="updated" from="MarginContainer/control/clock_label/clock_timer" to="MarginContainer/control/clock_label" method="_on_clock_timer_updated"]

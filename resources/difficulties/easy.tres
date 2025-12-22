@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="Difficulty" load_steps=2 format=3 uid="uid://dyxush14h2qp1"]
+
+[ext_resource type="Script" uid="uid://bh5g52rxydidl" path="res://resources/difficulty.gd" id="1_oyqdc"]
+
+[resource]
+script = ExtResource("1_oyqdc")
+name = "Easy"
+mines_populate = 12.0
+metadata/_custom_type_script = "uid://bh5g52rxydidl"

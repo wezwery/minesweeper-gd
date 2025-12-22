@@ -1,0 +1,42 @@
+[gd_scene load_steps=2 format=3 uid="uid://rj2ubcihas3i"]
+
+[ext_resource type="Script" uid="uid://sqj1drx0exdp" path="res://nodes/menu/record_item.gd" id="1_hckq3"]
+
+[node name="record_item" type="PanelContainer" node_paths=PackedStringArray("diff_name", "grid_size", "elapsed_time")]
+script = ExtResource("1_hckq3")
+diff_name = NodePath("MarginContainer/HBoxContainer/diff_name")
+grid_size = NodePath("MarginContainer/HBoxContainer/grid_size")
+elapsed_time = NodePath("MarginContainer/HBoxContainer/elapsed_time")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="diff_name" type="Label" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 6
+text = "Easy"
+
+[node name="VSeparator" type="VSeparator" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="grid_size" type="Label" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "16x16"
+horizontal_alignment = 1
+
+[node name="VSeparator2" type="VSeparator" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="elapsed_time" type="Label" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "01:35"
+horizontal_alignment = 1
