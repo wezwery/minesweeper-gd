@@ -1,7 +1,7 @@
 extends Node
 
 const DIFFICULTIES_DIR_PATH = "res://resources/difficulties/"
-const RECORDS_DIR_PATH = "user://records/"
+var RECORDS_DIR_PATH := "user://test_records/" if OS.is_debug_build() else "user://records/"
 const SIZES = preload("uid://cjv4ye2l45bis").grids
 
 var DIFFICULTIES : Array[Difficulty]
@@ -62,7 +62,7 @@ func save_records() -> void:
 	for r in RECORDS:
 		ResourceSaver.save(r, RECORDS_DIR_PATH + "{0}-{1}x{2}-{3}".format([r.difficulty_name, r.grid_size.x,r.grid_size.y, r.elapsed_time]) + ".tres")
 	
-	print("Records saved!")
+	print("All records saved to '{0}'!".format([ProjectSettings.globalize_path(RECORDS_DIR_PATH)]))
 
 func _load_records() -> void:
 	RECORDS.clear()
@@ -72,4 +72,4 @@ func _load_records() -> void:
 				RECORDS.append(load(RECORDS_DIR_PATH + f))
 	else:
 		DirAccess.make_dir_recursive_absolute(RECORDS_DIR_PATH)
-	print("Records loaded!")
+	print("All records loaded from '{0}'!".format([ProjectSettings.globalize_path(RECORDS_DIR_PATH)]))
