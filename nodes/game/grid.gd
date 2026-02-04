@@ -195,6 +195,7 @@ func _is_cell_coord_valid(coord: Vector2i) -> bool:
 		   coord.x < current_game_preset.grid_size.x and coord.y < current_game_preset.grid_size.y
 
 func _get_cell_coord() -> Vector2i:
+	@warning_ignore("integer_division")
 	return Vector2i(get_local_mouse_position()) / _grid_set.CELL_SIZE
 
 func generate_grid(preset:GamePreset) -> void:
