@@ -1,2 +1,2 @@
 # minesweeper-gd
-Minesweeper made on Godot Engine 4.5
+Minesweeper made on Godot Engine 4.6
